@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 // api
-import { getPosts, deletePost } from 'api/posts';
+import { getPosts, deletePost, createNewPost } from 'api/posts';
 // styles
 import './list.css';
 
@@ -31,8 +31,13 @@ const List = () => {
         fetchPosts();
     }, [fetchPosts]);
 
-    const deleteThisPost = id => {
-        deletePost(id);
+    const deleteThisPost = async id => {
+        try {
+            await deletePost(id);
+            await fetchPosts();
+        } catch (e) {
+            console.log(e);
+        }
     };
 
     return (
@@ -53,6 +58,17 @@ const List = () => {
                         >
                       Delete
                         </button>
+                        <Link
+                            className="post-link"
+                            to={`/edit-post/${post.id}`}
+                        >
+                            <button
+                                type="button"
+                                onClick={() => createNewPost(post.id)}
+                            >
+                        Edit post
+                            </button>
+                        </Link>
                     </div>
                 )
             )}

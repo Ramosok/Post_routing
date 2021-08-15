@@ -1,39 +1,88 @@
 // libraries
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
 // api
-import { createNewPost } from 'api/posts';
+import { createNewPost, getPost } from 'api/posts';
 //style
 import './index.css';
 
 const Form = () => {
-    const [inputTitle, setInputTitle] = useState('');
-    const [inputBody, setInputBody] = useState('');
+    const { pathname } = useLocation();
+    const { id } = useParams();
+    const history = useHistory();
+    const isEditPost = pathname.includes('edit');
+    const [postData, setPostData] = useState({ title: '', body: '' });
 
+    const fetchPosts = useCallback(
+        async () => {
+            if (!isEditPost) {
+                return;
+            }
+            try {
+                const data = await getPost(id) || {};
+
+                setPostData(data);
+            } catch (e) {
+                console.log(e);
+            }
+        },
+        [id],
+    );
+
+    useEffect(() => {
+        fetchPosts();
+    }, [fetchPosts]);
+
+    const handleChange = event => {
+        const { name } = event.target;
+        const { value } = event.target;
+
+        setPostData({
+            [name]: value,
+        })
+
+    }
     const handleSubmit = event => {
         event.preventDefault();
-        console.log(inputTitle);
-        console.log(inputBody);
-        createNewPost();
-    };
+        try {
+            const title = event.target.title.value;
+            const body = event.target.body.value;
+            const data = {
+                title,
+                body,
+            };
 
+            createNewPost(data);
+            history.push('/');
+        } catch (e) {
+            console.log(e);
+        }
+    };
     return (
         <div className="form_style">
             <h3>Creat new post</h3>
-            <form>
+            <form onSubmit={handleSubmit}>
                 <label htmlFor="inputTitle">Title</label>
-                <input type="text" id="inputTitle" className="input_style" value={inputTitle} onChange={e => setInputTitle(e.target.value)} />
+                <input
+                    onChange={handleChange}
+                    value={postData.title}
+                    name="title"
+                    type="text"
+                    id="inputTitle"
+                    className="input_style"
+                />
                 <label htmlFor="textTitle">Body</label>
                 <textarea
-                    name="title"
+                    onChange={handleChange}
+                    value={postData.body}
+                    name="body"
                     id="textTitle"
                     cols="18"
                     rows="10"
-                    value={inputBody}
-                    onChange={e => setInputBody(e.target.value)}
                     className="input_style"
                 >
                 </textarea>
-                <button type="submit" onClick={handleSubmit}>Submit</button>
+                <button type="submit">Submit</button>
             </form>
         </div>
     );

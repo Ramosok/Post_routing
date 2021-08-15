@@ -19,6 +19,7 @@ const App = () => {
                 <Route exact path="/" component={List} />
                 <Route path="/post/:id" component={Post} />
                 <Route path="/newpost" component={Form} />
+              <Route path="/edit-post/:id" component={Form} />
             </Switch>
         </Layout>
     );
